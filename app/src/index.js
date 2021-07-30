@@ -8,20 +8,19 @@ const App = {
 
     start: async function () {
         const { web3 } = this;
-
         try {
+            // get account
+            this.account = (
+                await window.ethereum.request({ method: "eth_requestAccounts" })
+            )[0];
             // get contract instance
-            const networkId = await web3.eth.net.getId();
+            const networkId = window.ethereum.networkVersion;
             const deployedNetwork = starNotaryArtifact.networks[networkId];
             this.meta = new web3.eth.Contract(
                 starNotaryArtifact.abi,
                 deployedNetwork.address
             );
-
-            // get accounts
-            this.account = (
-                await window.ethereum.request({ method: "eth_requestAccounts" })
-            )[0];
+            console.log(this.meta.methods);
         } catch (error) {
             console.error("Could not connect to contract or chain.");
         }
@@ -40,15 +39,18 @@ const App = {
     createStar: async function () {
         const { createStar } = this.meta.methods;
         const name = document.getElementById("starName").value;
-        const id = document.getElementById("starId").value;
+        const id = parseInt(document.getElementById("starId").value);
+        console.log(typeof id);
+        console.log(this.account);
         await createStar(name, id).send({ from: this.account });
+        console.log("passed");
         App.setStatus("New Star Owner is " + this.account + ".");
     },
 
     // Implement Task 4 Modify the front end of the DAPP
     lookUp: async function () {
         const { lookUptokenIdToStarInfo } = this.meta.methods;
-        const starId = document.getElementById("starId").value;
+        const starId = parseInt(document.getElementById("starId").value);
         const starName = await lookUptokenIdToStarInfo(starId).call();
         App.showStarName("Star Name: " + starName);
     },
@@ -57,10 +59,9 @@ const App = {
 window.App = App;
 
 window.addEventListener("load", async function () {
-    if (window.ethereum) {
+    if (typeof window.ethereum !== "undefined") {
         // use MetaMask's provider
         App.web3 = new Web3(window.ethereum);
-        await window.ethereum.enable(); // get permission to access accounts
     } else {
         console.warn(
             "No web3 detected. Falling back to http://127.0.0.1:9545. You should remove this fallback when you deploy live"

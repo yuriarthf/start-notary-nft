@@ -62,7 +62,6 @@ module.exports = {
                     providerOrUrl: `wss://rinkeby.infura.io/ws/v3/${process.env.PROJECT_ID}`,
                     pollingInterval: 8000,
                     numberOfAddresses: 1,
-                    shareNonce: true,
                 });
             },
             network_id: 4,
